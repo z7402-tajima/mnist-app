@@ -23,6 +23,8 @@ model = load_model('./model.keras') # 学習済みモデルをロード
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
+    pred_answer = "画像を送信してください"
+
     if request.method == 'POST':
         if 'file' not in request.files: # ファイルデータが含まれていない
             flash('ファイルがありません')
@@ -36,18 +38,17 @@ def upload_file():
             file.save(os.path.join(UPLOAD_FOLDER, filename))
             filepath = os.path.join(UPLOAD_FOLDER, filename)
 
-            #受け取った画像を読み込み、numpyの配列形式に変換
+            # 受け取った画像を読み込み、numpyの配列形式に変換
             img = image.load_img(filepath, color_mode='grayscale', target_size=(image_size,image_size))
             img = image.img_to_array(img)
             data = np.array([img])
-            #変換したデータをモデルに渡して予測する
+            # 変換したデータをモデルに渡して予測する
             result = model.predict(data)[0]
             predicted = result.argmax()
-            pred_answer = "これは " + classes[predicted] + " です"
+            pred_answer = "この画像の数字は[" + classes[predicted] + "]です"
 
-            return render_template("index.html",answer=pred_answer)
     # 対応づけられたURLのページにhtmlを反映させる(htmlファイルはtemplatesフォルダに置く)
-    return render_template("index.html",answer="")
+    return render_template("index.html",answer=pred_answer)
 
 if __name__ == "__main__":
     # ローカル実行時
